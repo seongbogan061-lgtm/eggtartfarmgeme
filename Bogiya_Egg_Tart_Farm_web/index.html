@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bogiya: Egg Tart Farm</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section id="startScreen" class="start-screen" aria-label="game start screen">
+      <div class="start-sky">
+        <div class="sun"></div>
+        <div class="cloud cloud-one"></div>
+        <div class="cloud cloud-two"></div>
+        <div class="start-hills"></div>
+        <div class="start-house"></div>
+        <div class="start-field"></div>
+      </div>
+      <div class="start-content">
+        <h1>Bogiya: Egg Tart Farm</h1>
+        <p>조용한 파란 곰 보기가, 에그타르트가 자라는 신비한 농장을 가꾸는 작은 농장 게임.</p>
+        <div class="start-actions">
+          <button id="startButton" type="button">게임 시작</button>
+          <button id="aboutButton" type="button">게임 설명</button>
+          <button id="resetButton" type="button">초기화 하기</button>
+        </div>
+        <div id="aboutText" class="about-text" hidden>
+          밭과 나무밭에 씨앗, 딸기, 초코, 묘목을 심고 매일 물을 주세요. 자란 에그타르트와 우유를 오른쪽 아래 바구니와 트럭에 실으면 다음날 돈이 들어와요. 집 안 컴퓨터 TartNet에서는 재료, 목장 물품, 밭, 나무밭, 업그레이드를 살 수 있어요.
+        </div>
+      </div>
+    </section>
+    <div id="transitionOverlay" class="transition-overlay"></div>
+    <div id="loadingOverlay" class="loading-overlay">
+      <div id="loadingText" class="loading-text">마을 가는중</div>
+    </div>
+
+    <main class="app">
+      <section class="game-shell" aria-label="Bogiya Egg Tart Farm prototype">
+        <div class="topbar">
+          <div>
+            <h1>Bogiya: Egg Tart Farm</h1>
+            <p id="statusText">작은 나무집에서 첫 아침이 밝았어요.</p>
+          </div>
+          <div class="stats" aria-label="farm status">
+            <span id="dayText">1일차 · 봄</span>
+            <span id="moneyText">0원</span>
+            <button id="seasonButton" class="season-button" type="button">계절 정보</button>
+            <button id="musicButton" class="music-button" type="button">BGM 켜기</button>
+            <button id="saveButton" class="save-button" type="button">저장하기</button>
+          </div>
+        </div>
+
+        <div class="play-area">
+          <canvas id="game" width="1120" height="640" tabindex="0" aria-label="farm map"></canvas>
+          <aside class="panel">
+            <div class="portrait-row">
+              <img src="assets/bogiya_character.png" alt="Bogiya portrait" />
+              <img src="assets/egg_tart_character.png" alt="Egg tart character" />
+            </div>
+
+            <section class="panel-section">
+              <h2>가방</h2>
+              <div id="waterGauge" class="water-gauge"></div>
+              <div id="inventory" class="inventory"></div>
+            </section>
+
+            <section class="panel-section">
+              <h2>오늘 할 일</h2>
+              <ul id="taskList" class="task-list"></ul>
+            </section>
+
+            <section class="panel-section">
+              <h2>조작</h2>
+              <div class="help-grid">
+                <span>이동</span><strong>WASD</strong>
+                <span>행동</span><strong>E / Space</strong>
+                <span>집</span><strong>문 / 매트에서 E</strong>
+                <span>구매</span><strong>집 안 컴퓨터 E</strong>
+              </div>
+            </section>
+          </aside>
+        </div>
+
+        <div class="mobile-controls" aria-label="touch controls">
+          <button data-move="up" title="위">↑</button>
+          <button data-move="left" title="왼쪽">←</button>
+          <button data-action title="행동">E</button>
+          <button data-move="right" title="오른쪽">→</button>
+          <button data-move="down" title="아래">↓</button>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="shopDialog" class="modal">
+      <form method="dialog">
+        <div class="modal-head">
+          <h2>TartNet</h2>
+          <button value="close" title="닫기">×</button>
+        </div>
+        <p class="modal-copy">컴퓨터로 재료와 묘목을 주문해요. 주문한 물건은 바로 가방에 들어옵니다.</p>
+        <div id="shopItems" class="shop-items"></div>
+      </form>
+    </dialog>
+
+    <dialog id="sleepDialog" class="modal small-modal">
+      <form method="dialog">
+        <div class="modal-head">
+          <h2>잠자기</h2>
+          <button value="close" title="닫기">×</button>
+        </div>
+        <p class="modal-copy">오늘 하루를 마치고 내일 아침으로 넘어갈까요?</p>
+        <div class="home-actions">
+          <button id="confirmSleepButton" value="sleep" type="button">잠자기</button>
+          <button value="close" type="submit">아직 아니야</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="infoDialog" class="modal">
+      <form method="dialog">
+        <div class="modal-head">
+          <h2 id="infoTitle">안내</h2>
+          <button value="close" title="닫기">×</button>
+        </div>
+        <p id="infoText" class="modal-copy"></p>
+      </form>
+    </dialog>
+
+    <dialog id="saveDialog" class="modal small-modal">
+      <form method="dialog">
+        <div class="modal-head">
+          <h2>저장하기</h2>
+          <button value="close" title="닫기">×</button>
+        </div>
+        <p class="modal-copy">저장하고 시작 화면으로 나가시겠습니까?</p>
+        <div class="home-actions">
+          <button id="confirmSaveButton" value="save" type="button">네</button>
+          <button value="close" type="submit">아니요</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="wardrobeDialog" class="modal">
+      <form method="dialog">
+        <div class="modal-head">
+          <h2>옷장</h2>
+          <button value="close" title="닫기">×</button>
+        </div>
+        <p class="modal-copy">가지고 있는 옷 중에서 바로 갈아입을 옷을 골라요.</p>
+        <div id="wardrobeItems" class="shop-items"></div>
+      </form>
+    </dialog>
+
+    <dialog id="resetDialog" class="modal small-modal">
+      <form method="dialog">
+        <div class="modal-head">
+          <h2>초기화 하기</h2>
+          <button value="close" title="닫기">×</button>
+        </div>
+        <p class="modal-copy">저장된 게임을 지우고 처음부터 다시 시작할까요?</p>
+        <div class="home-actions">
+          <button id="confirmResetButton" value="reset" type="button">초기화</button>
+          <button value="close" type="submit">아니요</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="game.js"></script>
+  </body>
+</html>
